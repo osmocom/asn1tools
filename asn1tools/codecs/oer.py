@@ -7,6 +7,7 @@ from copy import copy
 import struct
 from operator import attrgetter
 import datetime
+from collections import OrderedDict
 
 from ..parser import EXTENSION_MARKER
 from . import BaseType, format_bytes, ErrorWithLocation
@@ -467,7 +468,7 @@ class MembersType(Type):
             return self.decode_root(decoder)
 
     def decode_root(self, decoder):
-        values = {}
+        values = OrderedDict()
         optionals = {
             optional: decoder.read_bit()
             for optional in self.optionals
@@ -498,7 +499,7 @@ class MembersType(Type):
         presence_bits = decoder.read_non_negative_binary_integer(num_additions)
         decoder.align()
 
-        decoded = {}
+        decoded = OrderedDict()
 
         for i in range(num_additions):
             if presence_bits & (1 << (num_additions - i - 1)):

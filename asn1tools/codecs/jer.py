@@ -7,6 +7,7 @@ import json
 import binascii
 import math
 import datetime
+from collections import OrderedDict
 
 from ..parser import EXTENSION_MARKER
 from . import BaseType, format_bytes, ErrorWithLocation
@@ -76,7 +77,7 @@ class MembersType(Type):
         return values
 
     def decode(self, data):
-        values = {}
+        values = OrderedDict()
 
         for member in self.members:
             name = member.name

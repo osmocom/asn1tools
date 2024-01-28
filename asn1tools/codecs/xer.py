@@ -7,6 +7,7 @@ import sys
 from xml.etree import ElementTree
 import binascii
 import datetime
+from collections import OrderedDict
 
 from ..parser import EXTENSION_MARKER
 from . import BaseType, format_bytes, ErrorWithLocation
@@ -122,7 +123,7 @@ class MembersType(Type):
         return element
 
     def decode(self, element):
-        values = {}
+        values = OrderedDict()
 
         for member in self.members:
             name = member.name

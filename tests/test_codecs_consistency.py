@@ -4,6 +4,7 @@ import unittest
 from datetime import date
 from datetime import time
 from datetime import datetime
+from collections import OrderedDict
 from copy import deepcopy
 from .utils import Asn1ToolsBaseTest
 import asn1tools
@@ -214,13 +215,13 @@ class Asn1ToolsCodecsConsistencyTest(Asn1ToolsBaseTest):
                            encoded_v2)
 
     def test_sequence(self):
-        self.encode_decode_all_codecs("SEQUENCE { a NULL }", [{'a': None}])
+        self.encode_decode_all_codecs("SEQUENCE { a NULL }", [OrderedDict([('a', None)])])
 
     def test_sequence_of(self):
         self.encode_decode_all_codecs("SEQUENCE OF NULL", [[], [None, None]])
 
     def test_set(self):
-        self.encode_decode_all_codecs("SET { a NULL }", [{'a': None}])
+        self.encode_decode_all_codecs("SET { a NULL }", [OrderedDict([('a', None)])])
 
     def test_set_of(self):
         self.encode_decode_all_codecs("SET OF NULL", [[], [None, None]])
@@ -336,7 +337,7 @@ class Asn1ToolsCodecsConsistencyTest(Asn1ToolsBaseTest):
             "} "
         )
 
-        self.encode_decode_all_codecs(spec, [{'a': ('b', {'a': ('c', None)})}])
+        self.encode_decode_all_codecs(spec, [OrderedDict([('a', ('b', OrderedDict([('a', ('c', None))])))])])
 
     def test_with_components(self):
         decoded = {

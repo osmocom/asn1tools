@@ -7,6 +7,7 @@ import math
 import binascii
 from copy import copy
 import datetime
+from collections import OrderedDict
 
 from ..parser import EXTENSION_MARKER
 from . import BaseType, format_bytes, DecodeError, ErrorWithLocation
@@ -750,7 +751,7 @@ class MembersType(StandardEncodeMixin, StandardDecodeMixin, Type):
 
         end_offset = None if length is None else offset + length
 
-        values = {}
+        values = OrderedDict()
 
         offset, out_of_data = self.decode_members(self.root_members, data, values, offset, end_offset)
 
