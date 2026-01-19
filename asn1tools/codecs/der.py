@@ -3,6 +3,7 @@
 """
 
 from . import ber
+from . import format_or
 from . import restricted_utc_time_to_datetime
 from . import restricted_utc_time_from_datetime
 from . import restricted_generalized_time_to_datetime
@@ -102,18 +103,44 @@ class ArrayType(StandardEncodeMixin, Type):
 
 class Integer(StandardEncodeMixin, Type):
 
-    def __init__(self, name):
+    def __init__(self, name, named_numbers = None, numeric_enums = False):
         super(Integer, self).__init__(name,
                                       'INTEGER',
                                       Tag.INTEGER)
+        self._numeric_enums = numeric_enums
+        if named_numbers:
+            self.data_to_value = named_numbers
+            self.value_to_data = {v: k for k, v in self.data_to_value.items()}
+
+    def format_names(self):
+        return format_or(sorted(list(self.value_to_data.values())))
+
+    def format_values(self):
+        return format_or(sorted(list(self.value_to_data)))
 
     def encode_content(self, data, values=None):
+        if isinstance(data, int):
+            if not data in self.value_to_data:
+                raise EncodeError("Expected enumeration value {}, but got '{}'.".format(self.format_names(),
+                                                                                        data))
+        elif hasattr(self, 'data_to_value') and not self._numeric_enums:
+            try:
+                data = self.data_to_value[data]
+            except KeyError:
+                raise EncodeError("Expected enumeration value {}, but got '{}'.".format(self.format_names(),
+                                                                                        data))
         return encode_signed_integer(data)
 
     def decode_content(self, data, offset, length):
         end_offset = offset + length
-
-        return int.from_bytes(data[offset:end_offset], byteorder='big', signed=True), end_offset
+        value = int.from_bytes(data[offset:end_offset], byteorder='big', signed=True)
+        if hasattr(self, 'value_to_data') and not self._numeric_enums:
+            if value in self.value_to_data:
+                value =  self.value_to_data[value]
+            else:
+                raise DecodeError("Expected enumeration value {}, but got '{}'.".format(self.format_values(),
+                                                                                        value))
+        return value, end_offset
 
 
 class BitString(Type):
@@ -321,7 +348,12 @@ class Compiler(ber.Compiler):
                 *self.compile_members(type_descriptor['members'],
                                       module_name))
         elif type_name == 'INTEGER':
-            compiled = Integer(name)
+            if 'named-numbers' in type_descriptor:
+                compiled = Integer(name,
+                                   self.get_namednum_values(type_descriptor, module_name),
+                                   self._numeric_enums)
+            else:
+                compiled = Integer(name)
         elif type_name == 'REAL':
             compiled = Real(name)
         elif type_name == 'ENUMERATED':

@@ -952,6 +952,12 @@ class Compiler(object):
 
         return enum_values
 
+    def get_namednum_values(self, type_descriptor, module_name):
+        """Converts the named number values to ints.
+
+        """
+        return type_descriptor['named-numbers']
+
     def get_restricted_to_range(self, type_descriptor, module_name):
         def convert_value(value):
             try:
